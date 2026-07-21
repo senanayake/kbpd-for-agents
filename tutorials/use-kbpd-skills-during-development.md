@@ -1,9 +1,10 @@
 # Use KBPD Skills During Development
 
 This tutorial walks through a small development decision using the KBPD skills
-in this repository. You will search existing knowledge, name the knowledge gap,
-plan a learning cycle, run evidence, connect the evidence to a decision, and
-validate the result.
+in this repository. You will learn the visible decision reasoning behind the
+files: name the knowledge gap, keep multiple options alive, run a small
+learning cycle, loop back when evidence changes the design space, and capture
+reusable knowledge.
 
 The goal is to learn the workflow, not to produce a perfect architecture.
 
@@ -17,7 +18,30 @@ The goal is to learn the workflow, not to produce a perfect architecture.
   keep `.github/copilot-instructions.md`, `AGENTS.md`, `.kbriefs/`, and
   `.agents/skills/` in the repository.
 
-## 1. Start With A Material Uncertainty
+## 1. Understand The KBPD Thinking Loop
+
+KBPD starts from the assumption that development is a learning system. The
+important question is not only "what should we build?" It is also "what must we
+learn before this decision is reliable?"
+
+Use this loop during development:
+
+```text
+material uncertainty
+-> knowledge gap
+-> set of plausible options
+-> learning cycle
+-> evidence
+-> design loopback
+-> narrowed decision
+-> reusable K-Brief
+```
+
+The loopback matters. Evidence may send you back to revise the question,
+restore an option you almost discarded, split one option into two, or update an
+older K-Brief. KBPD is not a straight-line checklist.
+
+## 2. Start With A Material Uncertainty
 
 Use the sample project scenario:
 
@@ -32,11 +56,18 @@ background work and because more than one plausible approach exists.
 If you are using Copilot, prompt it like this:
 
 ```text
-Use the KBPD skills in `.agents/skills/`. For this sample API idempotency
-decision, search existing K-Briefs before recommending an implementation.
+Use the /search-kbriefs skill. For this sample API idempotency decision, search
+existing K-Briefs before recommending an implementation.
 ```
 
-## 2. Search Existing Knowledge
+If your Copilot surface does not show project skills as slash commands, ask for
+the skill by name instead:
+
+```text
+Use the search-kbriefs skill from `.agents/skills/search-kbriefs/SKILL.md`.
+```
+
+## 3. Search Existing Knowledge
 
 Run:
 
@@ -49,15 +80,38 @@ You should find the example K-Briefs:
 - `.kbriefs/examples/KB-EX-001-retry-idempotency-design-space.md`
 - `.kbriefs/examples/KB-EX-002-in-memory-idempotency-restart-boundary.md`
 
-Use the `search-kbriefs` skill when working with an agent. Ask for a short
-report of:
+Use the `/search-kbriefs` skill when working with an agent. Ask for a short
+report:
 
 - briefs read;
 - knowledge that applies;
 - knowledge that does not apply;
 - remaining gap.
 
-## 3. Separate Facts, Observations, And Assumptions
+## 4. Name The Knowledge Gap
+
+A knowledge gap is not a vague area of ignorance. It is a specific thing the
+team must learn because a decision depends on it.
+
+For this scenario:
+
+```text
+We need to learn whether memory-only idempotency protects retry safety after
+process restart so that we can decide whether the sample API needs durable
+idempotency storage.
+```
+
+This is narrower than "research idempotency". It names the uncertainty, the
+condition, and the decision it affects.
+
+Ask Copilot:
+
+```text
+Use the /identify-knowledge-gap skill. Separate facts, observations,
+inferences, assumptions, decisions, and policies for this idempotency scenario.
+```
+
+## 5. Separate Facts, Observations, And Assumptions
 
 Write a short working note before deciding:
 
@@ -72,13 +126,29 @@ Decision not yet made: which idempotency strategy should be the default.
 This is the visible reasoning you want from an agent. It should not claim more
 than the evidence supports.
 
-Use the `identify-knowledge-gap` skill if the gap is not clear yet.
+Use the `/identify-knowledge-gap` skill if the gap is not clear yet.
 
-## 4. Plan The Learning Cycle
+## 6. Keep A Set Of Options Alive
 
-Use the smallest learning cycle that can change the decision.
+Set-based learning means you do not collapse to the first plausible answer too
+early. Hold several options long enough for evidence to eliminate or narrow
+them.
 
-For this sample, the cycle is a focused reproduction:
+For this scenario, keep at least these options open:
+
+| Option | Why It Is Plausible | What Could Eliminate It |
+| --- | --- | --- |
+| Memory cache | Smallest implementation, low latency. | Fails restart or multi-instance safety. |
+| Database record | Durable and explicit. | Too much latency or operational cost for the use case. |
+| Queue-level dedupe | Moves duplicate prevention to infrastructure. | Queue cannot replay HTTP results or has too short a dedupe window. |
+
+The point is not to analyze every possible system. It is to avoid premature
+convergence while the important uncertainty is still open.
+
+## 7. Plan The Learning Cycle
+
+Use the smallest learning cycle that can change the decision. For this sample,
+the cycle is a focused reproduction:
 
 ```text
 Gap: Does memory-only idempotency protect retry safety after restart?
@@ -90,9 +160,14 @@ Stop condition: one clear reproduction of the restart boundary.
 Likely K-Brief type if reusable: limit.
 ```
 
-Use the `plan-learning-cycle` skill for this step when working with an agent.
+Ask Copilot:
 
-## 5. Run The Evidence
+```text
+Use the /plan-learning-cycle skill. Plan the smallest learning cycle that can
+narrow the idempotency design space without committing to an implementation.
+```
+
+## 8. Run The Evidence
 
 Run:
 
@@ -117,36 +192,66 @@ result=in-memory idempotency is restart-local; sqlite persists
 The evidence is intentionally small. It proves a restart boundary; it does not
 prove production performance, retention policy, or queue-specific behavior.
 
-## 6. Connect Knowledge To A Decision
+## 9. Use Design Loopbacks
 
-Read:
+After the evidence, loop back to the option set:
 
-```bash
-sed -n '1,180p' examples/sample-project/decisions/ADR-0001-use-database-backed-idempotency.md
+```text
+Evidence: memory-only state does not survive restart.
+Loopback: remove memory-only cache as the default for retry safety.
+Still open: database record and queue-level dedupe.
+Next narrowing question: does the sample already have a database, and does the
+queue support durable dedupe plus response replay?
 ```
 
-Notice the artifact boundary:
+A loopback can change the design space without ending the decision. In this
+case, the sample project narrows toward database-backed idempotency because it
+needs a portable, durable example. A real product might run another learning
+cycle on queue capabilities before deciding.
+
+## 10. Connect Knowledge To A Decision
+
+Open `examples/sample-project/decisions/ADR-0001-use-database-backed-idempotency.md`
+and notice the artifact boundary:
 
 - K-Briefs record reusable learning and evidence.
 - The ADR records the selected consequence for the sample project.
 
-If this were new learning, use the `create-kbrief` skill to update an existing
+If this were new learning, use the `/create-kbrief` skill to update an existing
 brief or create a new one from `.kbriefs/templates/`.
 
-## 7. Review The K-Brief Quality
+## 11. Capture Or Update Reusable Knowledge
 
-Use the `review-kbrief` skill on one example brief:
+Use a K-Brief when the learning should guide future work. In this scenario:
+
+- the design-space brief preserves the option set and narrowing logic;
+- the limit brief records the restart boundary;
+- the ADR records the chosen sample-project consequence.
+
+Ask Copilot:
 
 ```text
-Use the `review-kbrief` skill to review
-`.kbriefs/examples/KB-EX-002-in-memory-idempotency-restart-boundary.md`.
-Check evidence, scope, applicability, and unsupported certainty.
+Use the /create-kbrief skill if this investigation produced new reusable
+knowledge. If an existing K-Brief already covers it, update that brief instead.
+```
+
+Do not create a K-Brief just because a task happened. Create one when the
+learning is material, evidence-backed, and likely to be reused.
+
+## 12. Review The K-Brief Quality
+
+Use the `/review-kbrief` skill on one example brief:
+
+```text
+Use the /review-kbrief skill to review
+`.kbriefs/examples/KB-EX-002-in-memory-idempotency-restart-boundary.md`. Check
+evidence, scope, applicability, and unsupported certainty.
 ```
 
 A good review should confirm that the brief states a narrow restart boundary and
 does not claim to solve all idempotency design.
 
-## 8. Validate The Repository
+## 13. Validate The Repository
 
 Run:
 
@@ -168,11 +273,14 @@ You used the KBPD loop:
 material uncertainty
 -> search existing knowledge
 -> identify the knowledge gap
+-> preserve a set of plausible options
 -> plan a small learning cycle
 -> run evidence
+-> loop back through the design space
 -> capture or reuse K-Briefs
 -> make a decision informed by knowledge
 ```
 
 The important habit is not creating more Markdown. The habit is making reusable
-learning visible before an agent or human commits to a solution.
+learning visible before an agent or human commits to a solution, and looping
+back when evidence changes what should remain possible.

@@ -56,6 +56,10 @@ The boundary appears when an instruction depends on:
 - A first GitHub Copilot adapter was added at `.github/copilot-instructions.md`
   as a thin pointer to `AGENTS.md`, `.kbriefs/`, and `.agents/skills/`, not as a
   duplicate KBPD rule set.
+- GitHub Copilot documentation says Copilot can choose skills based on the
+  user's prompt and the skill description, and users can explicitly request a
+  skill by prefixing the skill name with `/`. Copilot CLI also documents
+  `/skills list`, `/skills reload`, and `/skills info SKILL-NAME`.
 
 ## Implications
 
@@ -64,7 +68,8 @@ create briefs, and review briefs. They should not embed complete template
 content, claim universal activation, or replace `AGENTS.md`.
 
 Vendor-specific adapters should point back to the portable core. They may name
-the available skills, but should not copy complete skill bodies or templates.
+the available slash skills, but should not copy complete skill bodies or
+templates.
 
 ## Recommendations
 
@@ -91,3 +96,6 @@ to the portable core and document a real adoption need.
 
 - K-Briefs: KB-2026-001, KB-2026-004.
 - Source paths: `.agents/skills/`, `AGENTS.md`, `.kbriefs/README.md`.
+- GitHub Copilot skill docs:
+  `https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills`,
+  `https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference`.

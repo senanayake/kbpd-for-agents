@@ -55,6 +55,10 @@ it should be capable of finding issues that change files.
   passed after the fixes.
 - `python3 examples/sample-project/evidence/idempotency_restart_demo.py`
   demonstrated the intended sample evidence.
+- Human review of the first tutorial found that it under-taught knowledge gaps,
+  set-based learning, and design loopbacks, and that it used a low-level `sed`
+  command where higher-level explanation was more appropriate. The tutorial now
+  teaches the KBPD thinking loop explicitly and removes the `sed` step.
 
 ## Applicability
 
