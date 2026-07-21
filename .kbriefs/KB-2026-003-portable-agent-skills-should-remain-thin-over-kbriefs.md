@@ -53,6 +53,9 @@ The boundary appears when an instruction depends on:
   included, to be thin adapters rather than duplicated sources of truth.
 - This starter can validate skill frontmatter and template references, but it
   cannot validate how an external agent product activates those skills.
+- A first GitHub Copilot adapter was added at `.github/copilot-instructions.md`
+  as a thin pointer to `AGENTS.md`, `.kbriefs/`, and `.agents/skills/`, not as a
+  duplicate KBPD rule set.
 
 ## Implications
 
@@ -60,13 +63,15 @@ Skills should tell agents how to search, identify gaps, plan learning cycles,
 create briefs, and review briefs. They should not embed complete template
 content, claim universal activation, or replace `AGENTS.md`.
 
-Vendor-specific adapters should point back to the portable core.
+Vendor-specific adapters should point back to the portable core. They may name
+the available skills, but should not copy complete skill bodies or templates.
 
 ## Recommendations
 
 Keep `.agents/skills/` as thin Markdown workflows. Validate their metadata,
-paths, and references. Avoid adding product-specific behavior until a real
-adapter is needed and documented by a K-Brief.
+paths, and references. Keep `.github/copilot-instructions.md` as a thin adapter
+for Copilot users. Add other product-specific adapters only when they point back
+to the portable core and document a real adoption need.
 
 ## Applicability
 

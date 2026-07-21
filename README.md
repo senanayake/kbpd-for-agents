@@ -39,6 +39,8 @@ a reusable form, and let evidence narrow choices over time.
 | `.kbriefs/` | Canonical KBPD knowledge system for reusable learning. |
 | `.kbriefs/templates/` | Concise templates for the supported K-Brief types. |
 | `.agents/skills/` | Portable agent workflows that operate on `.kbriefs/`. |
+| `.github/copilot-instructions.md` | Thin GitHub Copilot adapter to the portable core. |
+| `tutorials/` | Hands-on tutorials for learning the KBPD workflow. |
 | `tools/validate_kbriefs.py` | Standard-library validation for K-Briefs and skills. |
 | `.kbriefs/examples/` | Example briefs showing evidence, limitations, and decisions. |
 | `examples/sample-project/` | A small scenario showing the learning flow end to end. |
@@ -77,11 +79,14 @@ to justify unsupported certainty.
 2. Copy `.kbriefs/` into the repository root. Keep it named `.kbriefs`.
 3. Copy `.agents/skills/` if your coding-agent environment can read portable
    skills or skill-like instructions.
-4. Copy `tools/validate_kbriefs.py` and optionally the tests if you want
+4. If you use GitHub Copilot, copy `.github/copilot-instructions.md` as a thin
+   adapter to `AGENTS.md`, `.kbriefs/`, and `.agents/skills/`.
+5. Copy `tutorials/` if you want a guided first-use exercise.
+6. Copy `tools/validate_kbriefs.py` and optionally the tests if you want
    structural validation in CI.
-5. Point any vendor-specific agent adapters at `AGENTS.md` and `.kbriefs/`
+7. Point any vendor-specific agent adapters at `AGENTS.md` and `.kbriefs/`
    instead of duplicating the KBPD rules.
-6. Run:
+8. Run:
 
 ```bash
 python tools/validate_kbriefs.py
@@ -113,7 +118,8 @@ python tools/validate_kbriefs.py
 python -m unittest discover -s tests -p 'test_*.py'
 ```
 
-See `examples/sample-project/` for a complete scenario.
+See `tutorials/use-kbpd-skills-during-development.md` for a guided walkthrough
+and `examples/sample-project/` for the sample scenario.
 
 ## K-Briefs And Other Artifacts
 
