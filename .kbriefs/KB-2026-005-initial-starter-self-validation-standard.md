@@ -64,6 +64,10 @@ it should be capable of finding issues that change files.
   to return to an earlier design point because of something it did not know. The
   tutorial now frames front-loaded learning and set-based narrowing as ways to
   expose material knowledge gaps before they become costly loopbacks.
+- Additional review clarified that knowledge gaps are causes of quality issues
+  that force loopbacks, and that set-based design plus design trade-off
+  understanding are core KBPD guidance. The tutorial now names the quality issue
+  risk and adds a trade-off mapping step before the learning cycle.
 
 ## Applicability
 

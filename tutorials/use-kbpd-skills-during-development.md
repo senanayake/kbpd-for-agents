@@ -37,14 +37,14 @@ material uncertainty
 ```
 
 Loopbacks matter because they are expensive. In KBPD, a design loopback occurs
-when a knowledge gap surfaces after the design process has moved forward,
-forcing the team to return to an earlier design point because of something it
-did not know.
+when a knowledge gap creates a quality issue after the design process has moved
+forward, forcing the team to return to an earlier design point because of
+something it did not know.
 
-KBPD tries to reduce loopbacks by front-loading learning and preserving sets of
-options until evidence supports narrowing. When an early learning cycle
-exposes a knowledge gap before commitment, that is not a costly loopback. That
-is cheap knowledge doing its job.
+KBPD tries to reduce loopbacks by front-loading learning, preserving sets of
+options, and understanding design trade-offs before convergence. When an early
+learning cycle exposes a knowledge gap before commitment, that is not a costly
+loopback. That is cheap knowledge doing its job.
 
 ## 2. Start With A Material Uncertainty
 
@@ -96,7 +96,7 @@ report:
 ## 4. Name The Knowledge Gap
 
 A knowledge gap is not a vague area of ignorance. It is a specific thing the
-team must learn because a decision depends on it.
+team must learn because a design decision or quality outcome depends on it.
 
 For this scenario:
 
@@ -150,7 +150,31 @@ For this scenario, keep at least these options open:
 The point is not to analyze every possible system. It is to avoid premature
 convergence while the important uncertainty is still open.
 
-## 7. Plan The Learning Cycle
+## 7. Map The Design Trade-Offs
+
+Set-based design is not just listing options. It requires understanding the
+trade-offs that make each option better or worse under different conditions.
+
+For this scenario:
+
+| Trade-Off | What To Learn |
+| --- | --- |
+| Durability vs simplicity | Does the simpler memory cache preserve retry safety after restart? |
+| Portability vs infrastructure leverage | Is queue-level dedupe available in the environments the starter should teach? |
+| Request latency vs correctness | Does durable idempotency add enough cost to change the default? |
+| Example clarity vs production completeness | How much policy, cleanup, and scaling detail belongs in a starter example? |
+
+Ask Copilot:
+
+```text
+Use the /search-kbriefs and /identify-knowledge-gap skills. Turn the option set
+into design trade-offs, then identify which trade-off needs evidence first.
+```
+
+The first trade-off to test is durability vs simplicity, because a restart
+failure would create a quality issue: duplicate jobs after client retries.
+
+## 8. Plan The Learning Cycle
 
 Use the smallest learning cycle that can change the decision. For this sample,
 the cycle is a focused reproduction:
@@ -172,7 +196,7 @@ Use the /plan-learning-cycle skill. Plan the smallest learning cycle that can
 narrow the idempotency design space without committing to an implementation.
 ```
 
-## 8. Run The Evidence
+## 9. Run The Evidence
 
 Run:
 
@@ -197,13 +221,14 @@ result=in-memory idempotency is restart-local; sqlite persists
 The evidence is intentionally small. It proves a restart boundary; it does not
 prove production performance, retention policy, or queue-specific behavior.
 
-## 9. Avoid Costly Design Loopbacks
+## 10. Avoid Costly Design Loopbacks
 
 After the evidence, narrow the option set:
 
 ```text
 Evidence: memory-only state does not survive restart.
 Set-based narrowing: remove memory-only cache as the default for retry safety.
+Quality issue avoided: duplicate jobs after retry across restart.
 Still viable: database record and queue-level dedupe.
 Next narrowing question: does the sample already have a database, and does the
 queue support durable dedupe plus response replay?
@@ -215,12 +240,12 @@ durable example. A real product might run another learning cycle on queue
 capabilities before deciding.
 
 If the team had already implemented memory-only idempotency as the committed
-design, then discovering the restart failure later would expose a knowledge gap
-that forces a loopback: return to the earlier design question, reopen the option
-set, change the implementation, and record what the team did not know soon
-enough.
+design, then discovering duplicate jobs after restart would reveal the missed
+knowledge gap as a quality issue. That quality issue would force a loopback:
+return to the earlier design question, reopen the option set, change the
+implementation, and record what the team did not know soon enough.
 
-## 10. Connect Knowledge To A Decision
+## 11. Connect Knowledge To A Decision
 
 Open `examples/sample-project/decisions/ADR-0001-use-database-backed-idempotency.md`
 and notice the artifact boundary:
@@ -231,11 +256,13 @@ and notice the artifact boundary:
 If this were new learning, use the `/create-kbrief` skill to update an existing
 brief or create a new one from `.kbriefs/templates/`.
 
-## 11. Capture Or Update Reusable Knowledge
+## 12. Capture Or Update Reusable Knowledge
 
 Use a K-Brief when the learning should guide future work. In this scenario:
 
 - the design-space brief preserves the option set and narrowing logic;
+- a trade-off brief would be appropriate if this comparison became reusable
+  beyond the sample;
 - the limit brief records the restart boundary;
 - the ADR records the chosen sample-project consequence.
 
@@ -249,7 +276,7 @@ knowledge. If an existing K-Brief already covers it, update that brief instead.
 Do not create a K-Brief just because a task happened. Create one when the
 learning is material, evidence-backed, and likely to be reused.
 
-## 12. Review The K-Brief Quality
+## 13. Review The K-Brief Quality
 
 Use the `/review-kbrief` skill on one example brief:
 
@@ -262,7 +289,7 @@ evidence, scope, applicability, and unsupported certainty.
 A good review should confirm that the brief states a narrow restart boundary and
 does not claim to solve all idempotency design.
 
-## 13. Validate The Repository
+## 14. Validate The Repository
 
 Run:
 
@@ -285,6 +312,7 @@ material uncertainty
 -> search existing knowledge
 -> identify the knowledge gap
 -> preserve a set of plausible options
+-> map the design trade-offs
 -> plan a small learning cycle
 -> run evidence
 -> avoid late loopbacks by narrowing before commitment
