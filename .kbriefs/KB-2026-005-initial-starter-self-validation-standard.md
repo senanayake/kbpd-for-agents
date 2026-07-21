@@ -59,6 +59,11 @@ it should be capable of finding issues that change files.
   set-based learning, and design loopbacks, and that it used a low-level `sed`
   command where higher-level explanation was more appropriate. The tutorial now
   teaches the KBPD thinking loop explicitly and removes the `sed` step.
+- A follow-up correction clarified that a KBPD design loopback occurs when a
+  knowledge gap surfaces after design work has moved forward, forcing the team
+  to return to an earlier design point because of something it did not know. The
+  tutorial now frames front-loaded learning and set-based narrowing as ways to
+  expose material knowledge gaps before they become costly loopbacks.
 
 ## Applicability
 

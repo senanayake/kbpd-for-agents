@@ -3,8 +3,7 @@
 This tutorial walks through a small development decision using the KBPD skills
 in this repository. You will learn the visible decision reasoning behind the
 files: name the knowledge gap, keep multiple options alive, run a small
-learning cycle, loop back when evidence changes the design space, and capture
-reusable knowledge.
+learning cycle, avoid costly loopbacks, and capture reusable knowledge.
 
 The goal is to learn the workflow, not to produce a perfect architecture.
 
@@ -32,14 +31,20 @@ material uncertainty
 -> set of plausible options
 -> learning cycle
 -> evidence
--> design loopback
--> narrowed decision
+-> narrowed design space
+-> decision
 -> reusable K-Brief
 ```
 
-The loopback matters. Evidence may send you back to revise the question,
-restore an option you almost discarded, split one option into two, or update an
-older K-Brief. KBPD is not a straight-line checklist.
+Loopbacks matter because they are expensive. In KBPD, a design loopback occurs
+when a knowledge gap surfaces after the design process has moved forward,
+forcing the team to return to an earlier design point because of something it
+did not know.
+
+KBPD tries to reduce loopbacks by front-loading learning and preserving sets of
+options until evidence supports narrowing. When an early learning cycle
+exposes a knowledge gap before commitment, that is not a costly loopback. That
+is cheap knowledge doing its job.
 
 ## 2. Start With A Material Uncertainty
 
@@ -192,22 +197,28 @@ result=in-memory idempotency is restart-local; sqlite persists
 The evidence is intentionally small. It proves a restart boundary; it does not
 prove production performance, retention policy, or queue-specific behavior.
 
-## 9. Use Design Loopbacks
+## 9. Avoid Costly Design Loopbacks
 
-After the evidence, loop back to the option set:
+After the evidence, narrow the option set:
 
 ```text
 Evidence: memory-only state does not survive restart.
-Loopback: remove memory-only cache as the default for retry safety.
-Still open: database record and queue-level dedupe.
+Set-based narrowing: remove memory-only cache as the default for retry safety.
+Still viable: database record and queue-level dedupe.
 Next narrowing question: does the sample already have a database, and does the
 queue support durable dedupe plus response replay?
 ```
 
-A loopback can change the design space without ending the decision. In this
-case, the sample project narrows toward database-backed idempotency because it
-needs a portable, durable example. A real product might run another learning
-cycle on queue capabilities before deciding.
+This is the desired KBPD behavior: learn cheaply before committing. The sample
+project narrows toward database-backed idempotency because it needs a portable,
+durable example. A real product might run another learning cycle on queue
+capabilities before deciding.
+
+If the team had already implemented memory-only idempotency as the committed
+design, then discovering the restart failure later would expose a knowledge gap
+that forces a loopback: return to the earlier design question, reopen the option
+set, change the implementation, and record what the team did not know soon
+enough.
 
 ## 10. Connect Knowledge To A Decision
 
@@ -276,11 +287,11 @@ material uncertainty
 -> preserve a set of plausible options
 -> plan a small learning cycle
 -> run evidence
--> loop back through the design space
+-> avoid late loopbacks by narrowing before commitment
 -> capture or reuse K-Briefs
 -> make a decision informed by knowledge
 ```
 
 The important habit is not creating more Markdown. The habit is making reusable
-learning visible before an agent or human commits to a solution, and looping
-back when evidence changes what should remain possible.
+learning visible before an agent or human commits to a solution, so expensive
+loopbacks become less likely.
